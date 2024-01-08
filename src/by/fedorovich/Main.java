@@ -41,13 +41,16 @@ class Employee implements Serializable {
     private static final long serialVersionUID = 1L;
     String nameOfWork;
     String name;
-    Employee(String nameOfWork, String name){
-        this.nameOfWork = nameOfWork;
-        this.name = name;
+    Employee(Object nameOfWork, Object name) throws NotString{
+        if (!(nameOfWork instanceof String) || !(name instanceof String)){
+            throw new NotString();
+        }
+        this.nameOfWork = (String) nameOfWork;
+        this.name = (String) name;
     }
 }
 class Dispatcher extends Employee{
-    Dispatcher(String nameOfWork, String name){
+    Dispatcher(Object nameOfWork, Object name) throws NotString{
         super(nameOfWork,name);
     }
     void setTrip(Driver driver, int trip, Car car){
@@ -64,7 +67,7 @@ class Driver extends Employee{
     boolean tripComplete = false;
     Car car;
     boolean works = true;
-    Driver(String nameOfWork, String name){
+    Driver(String nameOfWork, String name) throws NotString{
         super(nameOfWork,name);
     }
     public void setTrip(int trip) {
@@ -143,33 +146,40 @@ interface Pause{
     public void Print();
 }
 
-public class Main {
-    public static void main(String[] args) throws IOException,ClassNotFoundException {
+public class Main{
+    public static void main(String[] args) throws IOException,ClassNotFoundException,NotString {
         //Часть А
         Text text = new Text("Hi");
         Paragraph paragraph = new Paragraph(text);
         //Часть B
-        Dispatcher dispatcher = new Dispatcher("Диспетчер","Иван");
-        Driver[] drivers = new Driver[3];
-        drivers[0] = new Driver("Водитель","Михаил");
-        drivers[1] = new Driver("Водитель","Кирилл");
-        drivers[2] = new Driver("Водитель","Давид");
-        Car[] cars = new Car[3];
-        cars[0] = new Car(1,"BMW","I8",2015,"Black",100000,207587);
-        cars[1] = new Car(2,"Tesla","X",2020,"White",120000,578557);
-        cars[2] = new Car(3,"Mersedes","Maybach",2014,"Green",150000,766427);
-        dispatcher.setTrip(drivers[0],5,cars[0]);
-        dispatcher.setTrip(drivers[1],3,cars[1]);
-        dispatcher.setTrip(drivers[2],4,cars[2]);
-        System.out.println(drivers[2].getInfo());
-        drivers[1].setRepair(true);
-        System.out.println(drivers[1].car.repair);
-        dispatcher.setWorks(drivers[2],false);
-        System.out.println(drivers[2].getInfo());
-        drivers[0].tripComplete(true,true);
-        System.out.println(drivers[0].getInfo());
-        Deport deport = new Deport(dispatcher,drivers,cars);
-        deport.ShowDispatcher();
+        Dispatcher dispatcher;
+        try {
+            Car[] cars = new Car[3];
+            cars[0] = new Car(1,"BMW","I8",2015,"Black",100000,207587);
+            cars[1] = new Car(2,"Tesla","X",2020,"White",120000,578557);
+            cars[2] = new Car(3,"Mersedes","Maybach",2014,"Green",150000,766427);
+            Driver[] drivers = new Driver[3];
+            drivers[0] = new Driver("Водитель","Михаил");
+            drivers[1] = new Driver("Водитель","Кирилл");
+            drivers[2] = new Driver("Водитель","Давид");
+            dispatcher = new Dispatcher("Диспетчер",546); // вот тут не String
+            dispatcher.setTrip(drivers[0],5,cars[0]);
+            dispatcher.setTrip(drivers[1],3,cars[1]);
+            dispatcher.setTrip(drivers[2],4,cars[2]);
+            System.out.println(drivers[2].getInfo());
+            drivers[1].setRepair(true);
+            System.out.println(drivers[1].car.repair);
+            dispatcher.setWorks(drivers[2],false);
+            System.out.println(drivers[2].getInfo());
+            drivers[0].tripComplete(true,true);
+            System.out.println(drivers[0].getInfo());
+            Deport deport = new Deport(dispatcher,drivers,cars);
+            deport.ShowDispatcher();
+        }
+        catch (NotString e){
+            System.out.println("Ошибка, вы ввели не тип String");
+
+        }
         Pause pause = new Pause(){
             public void Print(){
                 System.out.println("Обеденный перерыв");
@@ -185,6 +195,7 @@ public class Main {
         FileInputStream fileInputStream = new FileInputStream("save.ser");
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
         Employee employee1 = (Employee) objectInputStream.readObject();
-        System.out.println(employee1);
+        System.out.println(employee1.name);
+
     }
 }
